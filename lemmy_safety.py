@@ -11,7 +11,7 @@ from lemmy_safety.check import check_image
 from lemmy_safety.filesystem import get_all_images_after, get_all_images, delete_image
 from lemmy_safety import database
 
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s', level=logging.WARNING)
 
 
 arg_parser = argparse.ArgumentParser()
@@ -22,18 +22,11 @@ arg_parser.add_argument('--dry_run', action="store_true", required=False, defaul
 args = arg_parser.parse_args()
 
 
-def check_and_delete_filename(key):
-    is_csam = check_image(key)
+def check_and_delete_filename(filepath):
+    is_csam = check_image(filepath)
     if is_csam and not args.dry_run:
-        delete_image(key)
-    return is_csam, key
-
-
-def check_and_delete_object(obj):
-    is_csam = check_image(obj.key)
-    if is_csam and not args.dry_run:
-        obj.delete()
-    return is_csam, obj
+        delete_image(filepath)
+    return is_csam, filepath
 
 
 
@@ -42,7 +35,7 @@ if args.all:
         futures = []
         for filepath in get_all_images():
             if not database.is_image_checked(filepath):
-                futures.append(executor.submit(check_and_delete_object, filepath))
+                futures.append(executor.submit(check_and_delete_filename, filepath))
             if len(futures) >= args.threads:
                 for future in futures:
                     result, filepath = future.result()

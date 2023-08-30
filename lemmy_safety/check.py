@@ -13,7 +13,7 @@ def check_image(path):
         image: PIL.Image.Image = filesystem.get_image(path)
     except UnidentifiedImageError:
         logger.warning(
-            "Image %s could not be read. Marking it as CSAM to be sure.", path
+            f"Image {path} could not be read. Marking it as CSAM to be sure."
         )
         return True
     if not image:
@@ -27,7 +27,7 @@ def check_image(path):
         )
     except OSError:
         logger.warning(
-            "Image %s could not be read. Marking it as CSAM to be sure.", path
+            f"Image {path} could not be read. Marking it as CSAM to be sure."
         )
         return True
     if is_csam:
